@@ -1,7 +1,10 @@
 {
   "name": "yak",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.0.1",
+  "description": "Yet Another Kalendar",
+  "author": "Triumvirate",
+  "repository": "https://github.com/vindkaldr/yak",
+  "license": "GPL-3.0",
   "scripts": {
     "start": "node ./bin/www",
     "test": "standard"
