@@ -1,12 +1,14 @@
 var express = require('express')
+var session = require('express-session')
+
 var path = require('path')
 // var favicon = require('serve-favicon');
 var logger = require('morgan')
 var cookieParser = require('cookie-parser')
 var bodyParser = require('body-parser')
 
-var index = require('./routes/index')
-var users = require('./routes/users')
+var login = require('./routes/login')
+var home = require('./routes/home')
 
 var app = express()
 
@@ -24,8 +26,14 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
-app.use('/', index)
-app.use('/users', users)
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: true
+}))
+
+app.use('/', login)
+app.use('/home', home)
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

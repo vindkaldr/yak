@@ -1,0 +1,16 @@
+extends layout
+
+block stylesheet
+  link(rel='stylesheet', href='/stylesheets/login.css')
+
+block content
+  div.ui.middle.aligned.center.aligned.grid
+    div.four.wide.column
+      form.ui.form(method='POST' action='/login')
+        div.field
+          label(for='username') Username:
+          input#username(type='text' name='username' placeholder='Username')
+        div.field
+          label(for='password') Password:
+          input#password(type='password' name='password' placeholder='Password')
+        button.ui.button(type='submit') Login
