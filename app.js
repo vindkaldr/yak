@@ -32,6 +32,14 @@ app.use(session({
   saveUninitialized: true
 }))
 
+app.all(/.*/, (request, response, next) => {
+  if (request.path === '/' || request.path === '/login' || request.session.loggedIn) {
+    next()
+  } else {
+    response.redirect('/')
+  }
+})
+
 app.use('/', login)
 app.use('/home', home)
 
