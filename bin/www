@@ -3,7 +3,7 @@
 const http = require('http')
 const app = require('../src/app')
 
-const defaultPort = 3000
+const DEFAULT_PORT = 3000
 
 const onListening = (server) => () => {
   const address = server.address()
@@ -29,7 +29,7 @@ const onError = (port) => (error) => {
 }
 
 const server = http.createServer(app)
-const port = process.env.PORT || defaultPort
+const port = process.env.PORT || DEFAULT_PORT
 
 server.listen(port)
 server.on('listening', onListening(server))

@@ -1,64 +1,85 @@
-var express = require('express')
-var session = require('express-session')
+const express = require('express')
+const session = require('express-session')
+const httpStatus = require('http-status-codes')
 
-var path = require('path')
-// var favicon = require('serve-favicon');
-var logger = require('morgan')
-var cookieParser = require('cookie-parser')
-var bodyParser = require('body-parser')
+const path = require('path')
+const logger = require('morgan')
+const bodyParser = require('body-parser')
 
-var login = require('./routes/login')
-var home = require('./routes/home')
+const login = require('./routes/login')
+const home = require('./routes/home')
 
-var app = express()
+const app = express()
 
-const internalServerError = 500
+const setupTemplateEngine = (app) => {
+  app.set('views', path.join(__dirname, 'views'))
+  app.set('view engine', 'pug')
+}
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'))
-app.set('view engine', 'pug')
+const setupSessionStore = (app) => {
+  app.use(session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: true
+  }))
+}
 
-// uncomment after placing your favicon in /public
-// app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'))
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(cookieParser())
-app.use(express.static(path.join(__dirname, 'public')))
+const setupLogger = (app) => {
+  app.use(logger('dev'))
+}
 
-app.use(session({
-  secret: 'keyboard cat',
-  resave: false,
-  saveUninitialized: true
-}))
+const setupRequestBodyParser = (app) => {
+  app.use(bodyParser.json())
+  app.use(bodyParser.urlencoded({ extended: false }))
+}
 
-app.all(/.*/, (request, response, next) => {
-  if (request.path === '/' || request.path === '/login' || request.session.loggedIn) {
-    next()
-  } else {
-    response.redirect('/')
-  }
-})
+const setupRedirectFilterForUnanuthenticedUsers = (app) => {
+  app.all(/.*/, (request, response, next) => {
+    if (request.path === '/' || request.path === '/login' || request.session.loggedIn) {
+      next()
+    } else {
+      response.redirect('/')
+    }
+  })
+}
 
-app.use('/', login)
-app.use('/home', home)
+const setupStaticFileServing = (app) => {
+  app.use(express.static(path.join(__dirname, 'public')))
+}
 
-// catch 404 and forward to error handler
-app.use((req, res, next) => {
-  var err = new Error('Not Found')
-  err.status = 404
-  next(err)
-})
+const setupRouters = (app) => {
+  app.use('/', login)
+  app.use('/home', home)
+}
 
-// error handler
-app.use((err, req, res) => {
-  // set locals, only providing error in development
-  res.locals.message = err.message
-  res.locals.error = req.app.get('env') === 'development' ? err : {}
+const setupHandlerForNotFoundResource = (app) => {
+  app.use((req, res, next) => {
+    var err = new Error('Not Found')
+    err.status = httpStatus.NOT_FOUND
+    next(err)
+  })
+}
 
-  // render the error page
-  res.status(err.status || internalServerError)
-  res.render('error')
-})
+const setupErrorHandler = (app) => {
+  app.use((err, req, res) => {
+    res.locals.message = err.message
+    res.locals.error = req.app.get('env') === 'development' ? err : {}
+
+    res.status(err.status || httpStatus.INTERNAL_SERVER_ERROR)
+    res.render('error')
+  })
+}
+
+setupTemplateEngine(app)
+setupSessionStore(app)
+setupLogger(app)
+
+setupRequestBodyParser(app)
+setupStaticFileServing(app)
+setupRedirectFilterForUnanuthenticedUsers(app)
+setupRouters(app)
+
+setupHandlerForNotFoundResource(app)
+setupErrorHandler(app)
 
 module.exports = app
